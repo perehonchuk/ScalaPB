@@ -1,6 +1,10 @@
 import scalapb.compiler.Version.grpcJavaVersion
 
-crossScalaVersions in ThisBuild := Seq("2.10.7", "2.11.12", "2.12.6")
+val ScalaDotty = "0.8.0-RC1"
+
+crossScalaVersions in ThisBuild := Seq("2.10.7", "2.11.12", "2.12.6", ScalaDotty)
+
+compileOrder := CompileOrder.JavaThenScala
 
 val grpcArtifactId = "protoc-gen-grpc-java"
 
@@ -39,8 +43,8 @@ val commonSettings = Seq(
       "io.grpc" % "grpc-services" % grpcJavaVersion,
       "io.grpc" % "grpc-services" % grpcJavaVersion % "protobuf",
       "org.scalacheck" %% "scalacheck" % "1.13.5" % "test",
+    ).map(_.withDottyCompat(scalaVersion.value)) ++ Seq(
       "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.Version.scalapbVersion % "protobuf",
-      "com.thesamet.scalapb" %% "scalapb-json4s" % "0.7.0-rc1"
     ),
 
     grpcExePath := xsbti.api.SafeLazyProxy {
@@ -71,7 +75,8 @@ lazy val root = (project in file("."))
     ),
     libraryDependencies ++= Seq(
       "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.Version.scalapbVersion
-    ))
+    )
+  )
 
 lazy val noJava = (project in file("nojava"))
   .settings(commonSettings)
@@ -81,5 +86,5 @@ lazy val noJava = (project in file("nojava"))
     ),
     libraryDependencies ++= Seq(
       "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.Version.scalapbVersion % "protobuf"
-    )
+    ),
   )
