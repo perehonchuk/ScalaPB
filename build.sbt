@@ -176,7 +176,6 @@ shadeTarget in ThisBuild := s"scalapbshade.v${version.value.replaceAll("[.-]","_
 
 lazy val compilerPlugin = project.in(file("compiler-plugin"))
   .settings(
-    crossScalaVersions := ScalaVersionsWithoutDotty,
     sourceGenerators in Compile += Def.task {
       val file = (sourceManaged in Compile).value / "scalapb" / "compiler" / "Version.scala"
       IO.write(file,
@@ -198,7 +197,7 @@ lazy val compilerPlugin = project.in(file("compiler-plugin"))
     libraryDependencies ++= Seq(
       "com.thesamet.scalapb" %% "protoc-bridge" % "0.7.3",
       "org.scalatest" %% "scalatest" % "3.0.5" % "test"
-    ),
+    ).map(_.withDottyCompat(scalaVersion.value)),
     mimaPreviousArtifacts := Set("com.thesamet.scalapb" %% "compilerplugin" % "0.7.0"),
     mimaBinaryIssueFilters ++= {
         import com.typesafe.tools.mima.core._
