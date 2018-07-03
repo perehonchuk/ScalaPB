@@ -843,7 +843,7 @@ class ProtobufGenerator(val params: GeneratorParams) extends DescriptorPimps {
   def generateImplicitExtensionsClass(message: Descriptor)(printer: FunctionalPrinter): FunctionalPrinter = {
     val scalaName = message.nameSymbol
     printer
-      .add(s"implicit class ${scalaName}Extensions(source: $scalaName) extends AnyVal {")
+      .add(s"implicit class ${scalaName}Extensions(val source: $scalaName) extends AnyVal {")
       .indent
       .add(s"def applyMask(fieldMask: com.google.protobuf.field_mask.FieldMask) = {")
       .indent
