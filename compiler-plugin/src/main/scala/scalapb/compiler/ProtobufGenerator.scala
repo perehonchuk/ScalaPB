@@ -840,6 +840,21 @@ class ProtobufGenerator(val params: GeneratorParams) extends DescriptorPimps {
       .add("}")
   }
 
+  def generateImplicitExtensionsClass(message: Descriptor)(printer: FunctionalPrinter): FunctionalPrinter = {
+    val scalaName = message.nameSymbol
+    printer
+      .add(s"implicit class ${scalaName}Extensions(source: $scalaName) extends AnyVal {")
+      .indent
+      .add(s"def applyMask(fieldMask: com.google.protobuf.field_mask.FieldMask) = {")
+      .indent
+      .add(s"//?TODO")
+      .add(s"source")
+      .outdent
+      .add("}")
+      .outdent
+      .add("}")
+  }
+
   def generateToJavaProto(message: Descriptor)(printer: FunctionalPrinter): FunctionalPrinter = {
     val myFullScalaName = message.scalaTypeName
     printer
@@ -1371,6 +1386,7 @@ class ProtobufGenerator(val params: GeneratorParams) extends DescriptorPimps {
       .print(message.nestedTypes)(printMessage)
       .print(message.getExtensions.asScala)(printExtension)
       .call(generateMessageLens(message))
+      .call(generateImplicitExtensionsClass(message))
       .call(generateFieldNumbers(message))
       .call(generateTypeMappers(message.fields ++ message.getExtensions.asScala))
       .when(message.isMapEntry)(generateTypeMappersForMapEntry(message))
