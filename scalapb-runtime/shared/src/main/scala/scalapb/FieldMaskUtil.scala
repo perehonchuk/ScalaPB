@@ -1,0 +1,5 @@
+package scalapb
+
+object FieldMaskUtil {
+
+}
