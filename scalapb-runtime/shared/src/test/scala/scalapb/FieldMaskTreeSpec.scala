@@ -123,6 +123,11 @@ object FieldMaskTreeSpec extends TestSuite {
       }
     }
 
+    "merge should" - {
+      // ?TODO How to test it?
+
+    }
+
     "intersect should" - {
       "return empty intersection with empty tree" - {
 
