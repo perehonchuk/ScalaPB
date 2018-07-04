@@ -841,31 +841,35 @@ class ProtobufGenerator(val params: GeneratorParams) extends DescriptorPimps {
   }
 
   def generateImplicitExtensionsClass(message: Descriptor)(printer: FunctionalPrinter): FunctionalPrinter = {
-    val scalaName = message.nameSymbol
-    printer
-      .add(s"implicit class ${scalaName}Extensions(val source: $scalaName) extends AnyVal {")
-      .indent
-      .add(s"def applyMask(fieldMask: com.google.protobuf.field_mask.FieldMask) = {")
-      .indent
-      .add(s"//?TODO")
-      .add(s"source")
-      .outdent
-      .add("}")
-      .outdent
-      .add("}")
+    if (message.isExtendable) {
+      val nameSymbol = message.nameSymbol
+      val scalaName = message.scalaName
+      printer
+        .add(s"implicit class ${scalaName}Extensions(val source: $nameSymbol) extends AnyVal {")
+        .indent
+        .add(s"def applyMask(fieldMask: com.google.protobuf.field_mask.FieldMask) = {")
+        .indent
+        .add(s"//?TODO")
+        .add(s"source")
+        .outdent
+        .add("}")
+        .outdent
+        .add("}")
+    } else {
+      printer
+    }
   }
 
   def generateIsValid(message: Descriptor)(printer: FunctionalPrinter): FunctionalPrinter = {
-    val className = message.nameSymbol
     printer
-      .add(s"def isValid(fieldMask: com.google.protobuf.field_mask.FieldMask): Boolean = {")
+      .add(s"def isValid(fieldMask: com.google.protobuf.field_mask.FieldMask): _root_.scala.Boolean = {")
       .indent
-      .add(s"scalapb.FieldMaskUtil.isValid($className.scalaDescriptor, fieldMask)")
+      .add(s"scalapb.FieldMaskUtil.isValid(scalaDescriptor, fieldMask)")
       .outdent
       .add("}")
-      .add(s"def isValid(path: String): Boolean = {")
+      .add(s"def isValid(path: _root_.scala.Predef.String): _root_.scala.Boolean = {")
       .indent
-      .add(s"scalapb.FieldMaskUtil.isValid($className.scalaDescriptor, path)")
+      .add(s"scalapb.FieldMaskUtil.isValid(scalaDescriptor, path)")
       .outdent
       .add("}")
   }
