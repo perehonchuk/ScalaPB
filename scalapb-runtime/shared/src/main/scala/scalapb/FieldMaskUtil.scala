@@ -6,12 +6,15 @@ import com.google.protobuf.field_mask.FieldMask
 import scala.annotation.tailrec
 
 object FieldMaskUtil {
+  private val FIELD_PATH_SEPARATOR = ","
+  private val FIELD_SEPARATOR_REGEX = "\\."
+
   def isValid(descriptor: Descriptor, fieldMask: FieldMask): Boolean = {
     fieldMask.paths.forall(isValid(descriptor, _))
   }
 
   def isValid(descriptor: Descriptor, path: String): Boolean = {
-    val parts = path.split("\\.")
+    val parts = path.split(FIELD_SEPARATOR_REGEX)
     isValid(descriptor, parts)
   }
 
@@ -39,5 +42,10 @@ object FieldMaskUtil {
       case ScalaType.Message(descriptor) => Some(descriptor)
       case _ => None
     }
+  }
+
+  implicit class FieldMaskExtensions(val fieldMask: FieldMask) extends AnyVal {
+    def toSingleString: String =
+      fieldMask.paths.mkString(FIELD_PATH_SEPARATOR)
   }
 }
