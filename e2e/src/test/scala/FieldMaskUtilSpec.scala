@@ -1,31 +1,24 @@
 import org.scalatest._
 import protobuf_unittest.unittest._
+import com.google.protobuf.field_mask.FieldMask
 
 class FieldMaskUtilSpec extends FlatSpec with MustMatchers {
-  "FieldMaskUtil" should "be valid" in {
+  "NestedTestAllTypes" should "be valid" in {
     NestedTestAllTypes.isValid("payload") must be(true)
-//    assertTrue(FieldMaskUtil.isValid(classOf[Nothing], "payload"))
-//    assertFalse(FieldMaskUtil.isValid(classOf[Nothing], "nonexist"))
-//    assertTrue(FieldMaskUtil.isValid(classOf[Nothing], "payload.optional_int32"))
-//    assertTrue(FieldMaskUtil.isValid(classOf[Nothing], "payload.repeated_int32"))
-//    assertTrue(FieldMaskUtil.isValid(classOf[Nothing], "payload.optional_nested_message"))
-//    assertTrue(FieldMaskUtil.isValid(classOf[Nothing], "payload.repeated_nested_message"))
-//    assertFalse(FieldMaskUtil.isValid(classOf[Nothing], "payload.nonexist"))
-//
-//    assertTrue(FieldMaskUtil.isValid(classOf[Nothing], FieldMaskUtil.fromString("payload")))
-//    assertFalse(FieldMaskUtil.isValid(classOf[Nothing], FieldMaskUtil.fromString("nonexist")))
-//    assertFalse(FieldMaskUtil.isValid(classOf[Nothing], FieldMaskUtil.fromString("payload,nonexist")))
-//
-//    assertTrue(FieldMaskUtil.isValid(NestedTestAllTypes.getDescriptor, "payload"))
-//    assertFalse(FieldMaskUtil.isValid(NestedTestAllTypes.getDescriptor, "nonexist"))
-//
-//    assertTrue(FieldMaskUtil.isValid(NestedTestAllTypes.getDescriptor, FieldMaskUtil.fromString("payload")))
-//    assertFalse(FieldMaskUtil.isValid(NestedTestAllTypes.getDescriptor, FieldMaskUtil.fromString("nonexist")))
-//
-//    assertTrue(FieldMaskUtil.isValid(classOf[Nothing], "payload.optional_nested_message.bb"))
-//    // Repeated fields cannot have sub-paths.
-//    assertFalse(FieldMaskUtil.isValid(classOf[Nothing], "payload.repeated_nested_message.bb"))
-//    // Non-message fields cannot have sub-paths.
-//    assertFalse(FieldMaskUtil.isValid(classOf[Nothing], "payload.optional_int32.bb"))
+    NestedTestAllTypes.isValid("payload.optional_int32") must be(true)
+    NestedTestAllTypes.isValid("payload.repeated_int32") must be(true)
+    NestedTestAllTypes.isValid("payload.optional_nested_message") must be(true)
+    NestedTestAllTypes.isValid("payload.repeated_nested_message") must be(true)
+    NestedTestAllTypes.isValid(FieldMask(List("payload"))) must be(true)
+    NestedTestAllTypes.isValid(FieldMask(List("payload.optional_nested_message.bb"))) must be(true)
+  }
+
+  "NestedTestAllTypes" should "be not valid" in {
+    NestedTestAllTypes.isValid("nonexist") must be(false)
+    NestedTestAllTypes.isValid("payload.nonexist") must be(false)
+    NestedTestAllTypes.isValid(FieldMask(List("nonexist"))) must be(false)
+    NestedTestAllTypes.isValid(FieldMask(List("payload", "nonexist"))) must be(false)
+    NestedTestAllTypes.isValid("payload.repeated_nested_message.bb") must be(false)
+    NestedTestAllTypes.isValid("payload.optional_int32.bb") must be(false)
   }
 }
