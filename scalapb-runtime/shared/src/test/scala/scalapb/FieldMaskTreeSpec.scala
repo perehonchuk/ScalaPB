@@ -11,22 +11,22 @@ object FieldMaskTreeSpec extends TestSuite {
     val emptyTree = FieldMaskTree()
     val singleNodeTree = FieldMaskTree(
       Node(
-        mutable.TreeMap("foo" ->
-          Node(mutable.TreeMap("baz" ->
-            Node(mutable.TreeMap("bar" -> Node(mutable.TreeMap.empty))))
+        mutable.HashMap("foo" ->
+          Node(mutable.HashMap("baz" ->
+            Node(mutable.HashMap("bar" -> Node(mutable.HashMap.empty))))
           )
         )
       )
     )
     val multipleNodesTree = FieldMaskTree(
       Node(
-        mutable.TreeMap("foo" ->
-          Node(mutable.TreeMap("baz" ->
-            Node(mutable.TreeMap("bar" -> Node(mutable.TreeMap.empty))))
+        mutable.HashMap("foo" ->
+          Node(mutable.HashMap("baz" ->
+            Node(mutable.HashMap("bar" -> Node(mutable.HashMap.empty))))
           ),
           "a" ->
-            Node(mutable.TreeMap("b" ->
-              Node(mutable.TreeMap("c" -> Node(mutable.TreeMap.empty))))
+            Node(mutable.HashMap("b" ->
+              Node(mutable.HashMap("c" -> Node(mutable.HashMap.empty))))
             )
         )
       )
@@ -56,8 +56,8 @@ object FieldMaskTreeSpec extends TestSuite {
         assert(
           singleNodeTree.addFieldPath("foo.baz") == FieldMaskTree(
             Node(
-              mutable.TreeMap("foo" ->
-                Node(mutable.TreeMap("baz" -> Node(mutable.TreeMap.empty)))
+              mutable.HashMap("foo" ->
+                Node(mutable.HashMap("baz" -> Node(mutable.HashMap.empty)))
               )
             )
           )
@@ -89,17 +89,17 @@ object FieldMaskTreeSpec extends TestSuite {
         assert(
           singleNodeTree.mergeFromFieldMask(FieldMask(Seq("a.b.c", "x.y.z"))) == FieldMaskTree(
             Node(
-              mutable.TreeMap("foo" ->
-                Node(mutable.TreeMap("baz" ->
-                  Node(mutable.TreeMap("bar" -> Node(mutable.TreeMap.empty))))
+              mutable.HashMap("foo" ->
+                Node(mutable.HashMap("baz" ->
+                  Node(mutable.HashMap("bar" -> Node(mutable.HashMap.empty))))
                 ),
                 "a" ->
-                  Node(mutable.TreeMap("b" ->
-                    Node(mutable.TreeMap("c" -> Node(mutable.TreeMap.empty))))
+                  Node(mutable.HashMap("b" ->
+                    Node(mutable.HashMap("c" -> Node(mutable.HashMap.empty))))
                   ),
                 "x" ->
-                  Node(mutable.TreeMap("y" ->
-                    Node(mutable.TreeMap("z" -> Node(mutable.TreeMap.empty))))
+                  Node(mutable.HashMap("y" ->
+                    Node(mutable.HashMap("z" -> Node(mutable.HashMap.empty))))
                   )
               )
             )
@@ -130,11 +130,21 @@ object FieldMaskTreeSpec extends TestSuite {
 
     "intersect should" - {
       "return empty intersection with empty tree" - {
-
+        assert(
+          emptyTree.intersect(singleNodeTree) == emptyTree
+        )
       }
 
       "return intersection with tree" - {
+        assert(
+          multipleNodesTree.intersect(singleNodeTree) == singleNodeTree
+        )
+      }
 
+      "return intersaction with mult tree" - {
+        assert(
+          multipleNodesTree.intersect(multipleNodesTree) == multipleNodesTree
+        )
       }
     }
 

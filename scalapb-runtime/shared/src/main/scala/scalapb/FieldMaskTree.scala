@@ -6,9 +6,9 @@ import scalapb.descriptors.{PMessage, PValue}
 
 import scala.collection.mutable
 
-protected case class Node(children: mutable.TreeMap[String, Node] = mutable.TreeMap.empty)
+protected case class Node(children: mutable.HashMap[String, Node] = mutable.HashMap.empty)
 
-case class FieldMaskTree(root: Node = Node(mutable.TreeMap.empty[String, Node])) {
+case class FieldMaskTree(root: Node = Node(mutable.HashMap.empty[String, Node])) {
   type Path = List[String]
 
   private val FIELD_PATH_SEPARATOR_REGEX = "\\."
@@ -19,7 +19,14 @@ case class FieldMaskTree(root: Node = Node(mutable.TreeMap.empty[String, Node]))
     FieldMaskTree.mergeFromFieldMask(this, fieldMask)
   }
 
-  def intersect(anotherTree: FieldMaskTree): FieldMaskTree = ???
+  def intersect(anotherTree: FieldMaskTree): FieldMaskTree = {
+    def intersectInternal(first: Node, second: Node): Node = {
+      val intersect: collection.Set[String] = first.children.keySet.intersect(second.children.keySet)
+      val tuples = intersect.map(k => k -> intersectInternal(first.children(k), second.children(k))).toSeq
+      Node(mutable.HashMap(tuples: _*))
+    }
+    FieldMaskTree(intersectInternal(this.root, anotherTree.root))
+  }
 
   def addFieldPath(path: String): FieldMaskTree = {
     val pathParts = path.split(FIELD_PATH_SEPARATOR_REGEX).toList
