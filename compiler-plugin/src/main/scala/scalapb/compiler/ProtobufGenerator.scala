@@ -849,7 +849,7 @@ class ProtobufGenerator(val params: GeneratorParams) extends DescriptorPimps {
         .indent
         .add(s"def applyMask(fieldMask: com.google.protobuf.field_mask.FieldMask) = {")
         .indent
-        .add(s"//?TODO")
+        .add(s"//?TODO add call to scalapb.FieldMaskUtil.Merge")
         .add(s"source")
         .outdent
         .add("}")

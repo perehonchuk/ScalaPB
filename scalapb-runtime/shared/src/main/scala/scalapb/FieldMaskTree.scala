@@ -2,14 +2,14 @@ package scalapb
 
 import com.google.protobuf.field_mask.FieldMask
 import FieldMaskUtil._
-import scalapb.descriptors.{PMessage, PValue}
+import scalapb.descriptors.{PEmpty, PMessage, PValue}
 
 import scala.collection.mutable
 
 protected case class Node(children: mutable.HashMap[String, Node] = mutable.HashMap.empty)
 
 case class FieldMaskTree(root: Node = Node(mutable.HashMap.empty[String, Node])) {
-  type Path = List[String]
+  type Path = Seq[String]
 
   private val FIELD_PATH_SEPARATOR_REGEX = "\\."
 
@@ -56,6 +56,42 @@ case class FieldMaskTree(root: Node = Node(mutable.HashMap.empty[String, Node]))
       .foldLeft(destination)((acc, elem) => setByPath(elem._1, elem._2, acc))
   }
 
+  def merge(mask: FieldMask, source: PMessage): PMessage = {
+    merge(mask, source, filterFields(mask, source))
+  }
+
+  private def filterFields(mask: FieldMask, source: PMessage): PMessage = {
+    def innerMerge(path: Path, source: PMessage): PMessage = path match {
+      case Nil => source
+      case x :: xs =>
+        source.copy(
+          value = source.value.filterKeys(_.name == x).map {
+            case (descriptor, value: PMessage) => (descriptor, innerMerge(xs, value))
+            case another => another
+          }
+        )
+    }
+
+    val tree = FieldMaskTree(mask)
+    val splittedPaths = getSplittedPaths(mask.paths)
+    val firstLevelFiltered = source.value.map(p => (p._1.name, p)).filterKeys(tree.root.children.keySet)
+
+    source.copy(
+      value = firstLevelFiltered.values.map {
+        case (descriptor, value: PMessage) => (
+          descriptor,
+          innerMerge(
+            splittedPaths
+              .find(_.head == descriptor.name)
+              .getOrElse(Seq.empty[String]).tail,
+            value
+          )
+        )
+        case leaveValue => leaveValue
+      }.toMap
+    )
+  }
+
   private def getFieldPaths(node: Node, path: String = "", paths: List[String] = List.empty): List[String] = node.children match {
     case tree if tree.isEmpty => path :: paths
     case tree => tree.map { case (name, value) =>
@@ -67,22 +103,25 @@ case class FieldMaskTree(root: Node = Node(mutable.HashMap.empty[String, Node]))
     }.reduce(_ ::: _)
   }
 
+  private def getSplittedPaths(unsplittedPaths: Seq[String]): Seq[Path] =
+    unsplittedPaths.map(_.split(FIELD_PATH_SEPARATOR_REGEX).toList)
+
   private def getByPath(path: Path, source: PMessage): PValue = path match {
     case Nil => throw new IllegalArgumentException
     case x :: xs => {
-      val nextPMessage = source.value.find(_._1.name == x).getOrElse(throw new IllegalArgumentException)._2.asInstanceOf[PMessage]
-      if(xs.isEmpty) nextPMessage else getByPath(xs, nextPMessage)
+      val nextPMessage = source.value.find(_._1.name == x).getOrElse(throw new IllegalArgumentException)._2
+      if(xs.isEmpty) nextPMessage else getByPath(xs, nextPMessage.asInstanceOf[PMessage])
     }
   }
 
   private def setByPath(path: Path, value: PValue, destination: PMessage): PMessage = path match {
     case Nil => throw new IllegalArgumentException
     case x :: xs => {
-      val descriptor = destination.value.find(_._1.name == x).getOrElse(throw new IllegalArgumentException)
+      val descriptor = destination.value.find(_._1.name == x).get
       destination.copy(
         value = destination.value.updated(
           descriptor._1,
-          if(xs.isEmpty) value else setByPath(xs, value, descriptor._2.asInstanceOf[PMessage])
+          if(xs.isEmpty || descriptor._2 == PEmpty) value else setByPath(xs, value, descriptor._2.asInstanceOf[PMessage]) // ?TODO Refactor
         )
       )
     }

@@ -32,6 +32,24 @@ object FieldMaskTreeSpec extends TestSuite {
       )
     )
 
+    val anotherMultipleNodesTree = FieldMaskTree(
+      Node(
+        mutable.HashMap("x" ->
+          Node(mutable.HashMap("y" ->
+            Node(mutable.HashMap("z" -> Node(mutable.HashMap.empty))))
+          ),
+          "a" ->
+            Node(mutable.HashMap("b" ->
+              Node(mutable.HashMap("c" -> Node(mutable.HashMap.empty))))
+            ),
+          "foo" ->
+            Node(mutable.HashMap("baz" ->
+              Node(mutable.HashMap("bar" -> Node(mutable.HashMap.empty))))
+            )
+        )
+      )
+    )
+
     "addFieldPath should" - {
       "return same tree when path is empty" - {
         assert(
@@ -141,22 +159,12 @@ object FieldMaskTreeSpec extends TestSuite {
         )
       }
 
-      "return intersaction with mult tree" - {
+      "return intersaction with multiple nodde tree" - {
         assert(
-          multipleNodesTree.intersect(multipleNodesTree) == multipleNodesTree
+          multipleNodesTree.intersect(anotherMultipleNodesTree) == multipleNodesTree
         )
       }
     }
 
-    "foreach should" - {
-
-      "traverse empty tree" - {
-
-      }
-
-      "traverse tree" - {
-
-      }
-    }
   }
 }

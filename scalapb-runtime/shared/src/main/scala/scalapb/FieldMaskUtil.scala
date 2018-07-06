@@ -1,6 +1,6 @@
 package scalapb
 
-import scalapb.descriptors.{Descriptor, ScalaType}
+import scalapb.descriptors.{Descriptor, PMessage, ScalaType}
 import com.google.protobuf.field_mask.FieldMask
 
 import scala.annotation.tailrec
@@ -17,6 +17,17 @@ object FieldMaskUtil {
     val parts = path.split(FIELD_SEPARATOR_REGEX)
     isValid(descriptor, parts)
   }
+
+  def merge[T <: GeneratedMessage](mask: FieldMask, source: T, destination: T): T = {
+    destination.companion.messageReads.read(
+      FieldMaskTree(mask).merge(mask, source.toPMessage, destination.toPMessage)
+    ).asInstanceOf[T]
+  }
+
+  def merge(mask: FieldMask, source: PMessage) = {
+    FieldMaskTree(mask).merge(mask, source)
+  }
+
 
   @tailrec
   private def isValid(descriptor: Descriptor, parts: Array[String]): Boolean = {
