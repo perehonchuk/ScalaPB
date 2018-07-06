@@ -21,11 +21,25 @@ case class FieldMaskTree(root: Node = Node(mutable.HashMap.empty[String, Node]))
 
   def intersect(anotherTree: FieldMaskTree): FieldMaskTree = {
     def intersectInternal(first: Node, second: Node): Node = {
-      val intersect: collection.Set[String] = first.children.keySet.intersect(second.children.keySet)
-      val tuples = intersect.map(k => k -> intersectInternal(first.children(k), second.children(k))).toSeq
-      Node(mutable.HashMap(tuples: _*))
+      if (second.children.isEmpty) {
+        Node(mutable.HashMap(first.children.toSeq: _*))
+      } else if (first.children.isEmpty) {
+        Node(mutable.HashMap(second.children.toSeq: _*))
+      } else {
+        val intersect: collection.Set[String] = first.children.keySet.intersect(second.children.keySet)
+        val tuples = intersect.map(k => k -> intersectInternal(first.children(k), second.children(k)))
+          .filter(p => first.children(p._1).children.isEmpty && second.children(p._1).children.isEmpty
+            || p._2.children.nonEmpty).toSeq
+        Node(mutable.HashMap(tuples: _*))
+      }
     }
-    FieldMaskTree(intersectInternal(this.root, anotherTree.root))
+    FieldMaskTree(if (this.root.children.isEmpty) {
+      Node()
+    } else if (anotherTree.root.children.isEmpty) {
+      Node()
+    } else {
+      intersectInternal(this.root, anotherTree.root)
+    })
   }
 
   def addFieldPath(path: String): FieldMaskTree = {

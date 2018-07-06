@@ -18,6 +18,10 @@ object FieldMaskUtil {
     isValid(descriptor, parts)
   }
 
+  def intersection (mask1: FieldMask, mask2: FieldMask): FieldMask = {
+    FieldMaskTree(mask1).intersect(FieldMaskTree(mask2)).toFieldMask
+  }
+
   @tailrec
   private def isValid(descriptor: Descriptor, parts: Array[String]): Boolean = {
     parts match {

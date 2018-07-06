@@ -32,5 +32,22 @@ object FieldMaskUtilSpec extends TestSuite {
         )
       }
     }
+
+    "FieldMaskExtensions.intersection" - {
+      import FieldMaskUtil._
+      assert(FieldMaskUtil.intersection(FieldMask(Seq("foo", "bar.baz", "bar.quz")), FieldMask(Seq("foo.bar" ,"bar"))).toSingleString == "foo.bar,bar.baz,bar.quz")
+
+      assert(FieldMaskUtil.intersection(FieldMask(Seq("foo", "bar.baz", "bar.quz")), FieldMask(Seq())).toSingleString == "")
+
+      assert(FieldMaskUtil.intersection(FieldMask(Seq("foo", "bar.baz", "bar.quz")), FieldMask(Seq("quz"))).toSingleString == "")
+
+      assert(FieldMaskUtil.intersection(FieldMask(Seq("foo", "bar.baz", "bar.quz")), FieldMask(Seq("foo.bar"))).toSingleString == "foo.bar")
+
+      assert(FieldMaskUtil.intersection(FieldMask(Seq("foo", "bar.baz", "bar.quz")), FieldMask(Seq("foo"))).toSingleString == "foo")
+
+      assert(FieldMaskUtil.intersection(FieldMask(Seq("foo", "bar.baz", "bar.quz")), FieldMask(Seq("bar.foo"))).toSingleString == "")
+
+      assert(FieldMaskUtil.intersection(FieldMask(Seq("foo", "bar.baz", "bar.quz")), FieldMask(Seq("bar"))).toSingleString == "bar.baz,bar.quz")
+    }
   }
 }
