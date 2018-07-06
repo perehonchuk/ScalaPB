@@ -99,6 +99,7 @@ lazy val runtime = crossProject(JSPlatform, JVMPlatform, NativePlatform)
       "com.lihaoyi" %%% "fastparse" % "1.0.0",
       "com.lihaoyi" %%% "utest" % "0.6.4" % "test",
       "commons-codec" % "commons-codec" % "1.11" % "test",
+      "com.google.protobuf" % "protobuf-java-util" % protobufVersion % "test",
     ),
     testFrameworks += new TestFramework("utest.runner.Framework"),
     unmanagedResourceDirectories in Compile += baseDirectory.value / "../../protobuf",
@@ -191,7 +192,8 @@ lazy val compilerPlugin = project.in(file("compiler-plugin"))
     }.taskValue,
     libraryDependencies ++= Seq(
       "com.thesamet.scalapb" %% "protoc-bridge" % "0.7.3",
-      "org.scalatest" %% "scalatest" % "3.0.5" % "test"
+      "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+      "com.github.os72" % "protoc-jar" % "3.5.1.1" % "test",
     ),
     mimaPreviousArtifacts := Set("com.thesamet.scalapb" %% "compilerplugin" % "0.7.0"),
     mimaBinaryIssueFilters ++= {
